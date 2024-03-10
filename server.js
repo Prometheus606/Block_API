@@ -19,8 +19,10 @@ app.use(connectDB) // Connect to the Database
 app.use(disconnectDB) // Disconnects from DB after res send
 
 // Routes
-app.use("/api/block", require("./routes/index"))
+app.use("/api/blog/", require("./routes/blog"))
 app.use("/api/auth", require("./routes/auth"))
+app.use("/api/search", require("./routes/search"))
+app.use("/api/comment", require("./routes/comment"))
 
 // use error handler
 app.use(require("./middleware/errorHandler"))

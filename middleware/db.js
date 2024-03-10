@@ -28,6 +28,15 @@ const connectDB = async (req, res, next) => {
                 date DATE NOT NULL DEFAULT CURRENT_DATE
             )
         `);
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS comments (
+                id SERIAL PRIMARY KEY, 
+                user_id INT REFERENCES users(id),
+                post_id INT REFERENCES posts(id),
+                content TEXT NOT NULL, 
+                date DATE NOT NULL DEFAULT CURRENT_DATE
+            )
+        `);
         
         req.db = db
 

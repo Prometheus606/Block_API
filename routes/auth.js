@@ -1,8 +1,12 @@
-const jwt = require('jsonwebtoken')
 const router = require("express").Router()
 const pw = require("../middleware/password")
+const verify = require("../middleware/verify")
+const jwt = require('jsonwebtoken')
 
-router.get("/login", async (req, res) => {
+/**
+ * Login route. Requires username and password in the request body. Returns an JWT token as Cockie.
+ */
+router.post("/login", async (req, res) => {
     const db = req.db
 
     if (!req.body.username || !req.body.password) {
@@ -30,7 +34,10 @@ router.get("/login", async (req, res) => {
 
 })
 
-router.get("/register", async (req, res) => {
+/**
+ * Register route. Requires username and password in the request body.
+ */
+router.post("/register", async (req, res) => {
     const db = req.db
 
     if (!req.body.username || !req.body.password) {
@@ -64,9 +71,82 @@ router.get("/register", async (req, res) => {
 
 })
 
+/**
+ * Logout route. Login required
+ */
 router.get("/logout", async (req, res) => {
     res.clearCookie("token")
     res.json({ success: true, message: "Logout successful." });
+})
+
+
+/**
+ * Delete user and posts route. Login required
+ */
+router.delete("/", verify, async (req, res) => {
+    const db = req.db
+
+    try {
+        const user = req.user;
+
+        await db.query("DELETE FROM posts WHERE user_id = $1", [user.id]);
+        await db.query("DELETE FROM users WHERE id = $1", [user.id]);
+
+        res.json({ success: true, result: "Succesful deleted your Account" });
+
+    } catch (error) {
+        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1012 };
+        console.log(err, error);
+        res.json(err);
+    }
+
+})
+
+/**
+ * Change password route. Login required. Logges the user out.
+ */
+router.patch("/change-password", verify, async (req, res) => {
+    const db = req.db
+
+    try {
+        const user = req.user;
+        const password = req.body.password
+
+        const passwordHash = await pw.hash(password)
+        await db.query("UPDATE users SET password = $2 WHERE id = $1", [user.id, passwordHash]);
+        res.clearCookie("token")
+
+        res.json({ success: true, result: "Succesful updated your Password. You have to login again." });
+
+    } catch (error) {
+        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1012 };
+        console.log(err, error);
+        res.json(err);
+    }
+
+})
+
+/**
+ * Change username route. Login required. Logges the user out.
+ */
+router.patch("/change-username", verify, async (req, res) => {
+    const db = req.db
+
+    try {
+        const user = req.user;
+        const username = req.body.username
+
+        await db.query("UPDATE users SET username = $2 WHERE id = $1", [user.id, username]);
+        res.clearCookie("token")
+
+        res.json({ success: true, result: "Succesful updated your Username. You have to login again." });
+
+    } catch (error) {
+        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1012 };
+        console.log(err, error);
+        res.json(err);
+    }
+
 })
 
 module.exports = router
