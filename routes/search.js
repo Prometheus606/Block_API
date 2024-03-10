@@ -1,10 +1,11 @@
 const router = require("express").Router()
+const verify = require("../middleware/verify")
 
 /**
- * Search post route. No Login required. possible search params as query params are author and keywords.
+ * Search post route. Login required. possible search params as query params are author and keywords.
  * Keywords can be a string with multiple words. If no param is given, this route returns all posts.
  */
-router.get("/", async (req, res) => {
+router.get("/", verify, async (req, res) => {
     const db = req.db
     const params = []
     try {

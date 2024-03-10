@@ -1,12 +1,15 @@
 const router = require("express").Router()
 const verify = require("../middleware/verify")
 
+/**
+ * Get all posts from user route. Login required.
+ */
 router.get("/all", verify, async (req, res) => {
     const db = req.db
     try {
         const user = req.user;
 
-        const result = await db.query("SELECT * FROM posts WHERE user_id = $1", [user.id]);
+        const result = await db.query("SELECT * FROM comments WHERE user_id = $1", [user.id]);
         const posts = result.rows;
         console.log(posts);
 
@@ -19,15 +22,19 @@ router.get("/all", verify, async (req, res) => {
     }
 });
 
+/**
+ * Gets an specific comment. Login required. post id required as query param
+ */
 router.get("/:id", verify, async (req, res) => {
     const db = req.db
     const id = req.params.id
     try {
         const user = req.user;
 
-        const result = await db.query("SELECT * FROM posts WHERE id = $1", [id]);
+        const result = await db.query("SELECT * FROM comments WHERE id = $1 AND user_id = $2", [id, user.id]);
+
         if (result.rows.length < 1) {
-            const err = { success: false, error: "Post not found", errorCode: 1020 };
+            const err = { success: false, error: "Comment not found", errorCode: 1020 };
             return res.json(err);
         }
         const post = result.rows[0];
@@ -41,12 +48,15 @@ router.get("/:id", verify, async (req, res) => {
     }
 });
 
+/**
+ * Creates a comment. Login required. content required as body parameter
+ */
 router.post("/", verify, async (req, res) => {
     const db = req.db
     try {
         const user = req.user;
 
-        const result = await db.query("INSERT INTO posts (user_id, title, content) VALUES ($1, $2, $3) RETURNING *", [user.id, req.body.title, req.body.content]);
+        const result = await db.query("INSERT INTO comments (user_id, content, post_id) VALUES ($1, $2, $3) RETURNING *", [user.id, req.body.content, req.body.postID]);
         const post = result.rows[0];
 
         res.json({ success: true, result: post });
@@ -58,13 +68,22 @@ router.post("/", verify, async (req, res) => {
     }
 });
 
+/**
+ * Updates a comment. Login required. content required as body parameter, post id as query param
+ */
 router.put("/:id", verify, async (req, res) => {
     const db = req.db
     const id = req.params.id
     try {
         const user = req.user;
 
-        const result = await db.query("UPDATE posts SET title= $2, content= $3 WHERE id=$1 RETURNING *", [id, req.body.title, req.body.content]);
+        result = await db.query("UPDATE comments SET content= $2 WHERE id=$1 AND user_id = $3 RETURNING *", [id, req.body.content, user.id]);
+
+        if (result.rows.length < 1) {
+            const err = { success: false, error: "Comment not found", errorCode: 1020 };
+            return res.json(err);
+        }
+
         const post = result.rows[0];
 
         res.json({ success: true, result: post });
@@ -76,15 +95,23 @@ router.put("/:id", verify, async (req, res) => {
     }
 });
 
+/**
+ * Deletes a comment. Login required. post id required as query param
+ */
 router.delete("/:id", verify, async (req, res) => {
     const db = req.db
     const id = req.params.id
     try {
         const user = req.user;
 
-        const result = await db.query("DELETE FROM posts WHERE id=$1", [id]);
+        const result = await db.query("DELETE FROM comments WHERE id=$1 AND user_id = $2", [id, user.id]);
 
-        res.json({ success: true, message: "Successful deleted your Post." });
+        if (result.rows.length < 1) {
+            const err = { success: false, error: "Comment not found", errorCode: 1020 };
+            return res.json(err);
+        }
+
+        res.json({ success: true, message: "Successful deleted your Comment." });
 
     } catch (error) {
         const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1012 };

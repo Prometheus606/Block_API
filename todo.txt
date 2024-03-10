@@ -1,3 +1,3 @@
 - README anpassen (email adresse und documentation adresse)
-- comment.js datei anpassen (bis jetzt nur von blog.js kopiert)
-- doc erstellen postman
+- doc verbessern in postman
+- errorcodes anpassen
