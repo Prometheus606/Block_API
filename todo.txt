@@ -1,3 +1,1 @@
-- README anpassen (email adresse und documentation adresse)
-- doc verbessern in postman
-- errorcodes anpassen
+- README anpassen (support email adresse)

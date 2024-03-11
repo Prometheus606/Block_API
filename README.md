@@ -32,7 +32,7 @@ The Blog API is a RESTful web service designed to provide backend support for ma
 
 ## Documentation
 
-Comprehensive API documentation is available at [API Documentation](https://example.com/api-docs).
+Comprehensive API documentation is available at [API Documentation](https://documenter.getpostman.com/view/33503313/2sA2xiVWh5).
 
 ## Feedback and Support
 

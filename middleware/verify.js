@@ -11,7 +11,7 @@ const verify = (req, res, next) => {
     
         next()
     } catch (error) {
-        const err = { success: false, error: "You are not logged in.", errorCode: 1012 };
+        const err = { success: false, error: "You are not logged in.", errorCode: 1011 };
         console.log(err, error);
         res.json(err);
     }

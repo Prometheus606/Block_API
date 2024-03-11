@@ -11,7 +11,7 @@ router.post("/login", async (req, res) => {
     const db = req.db
 
     if (!req.body.username || !req.body.password) {
-        const err = {success: false, error: "Username and password required.", errorCode: 1005}
+        const err = {success: false, error: "Username and password required.", errorCode: 1020}
         return res.json(err)
     }
 
@@ -20,7 +20,7 @@ router.post("/login", async (req, res) => {
     const result = await db.query("SELECT * FROM users WHERE username=$1", [username])
 
     if (result.rows.length !== 1) {
-        const err = {success: false, error: "User not found.", errorCode: 1007}
+        const err = {success: false, error: "User not found.", errorCode: 1021}
         return res.json(err)
     }
     const user = result.rows[0]
@@ -29,7 +29,7 @@ router.post("/login", async (req, res) => {
         res.cookie('token', token, { maxAge: process.env.COCKIE_EXPIRE });
         return res.json({success: true, message: "Successful logged in.", token})
     } else {
-        const err = {success: false, error: "Wrong Username or Password.", errorCode: 1006}
+        const err = {success: false, error: "Wrong Username or Password.", errorCode: 1023}
         return res.json(err)
     }
 
@@ -42,17 +42,17 @@ router.post("/register", async (req, res) => {
     const db = req.db
 
     if (!req.body.username || !req.body.password  || !req.body.email) {
-        const err = {success: false, error: "Email, username and password required.", errorCode: 1002}
+        const err = {success: false, error: "Email, username and password required.", errorCode: 1024}
         return res.json(err)
     }
 
     if (req.body.password.length < 5) {
-        const err = {success: false, error: "Password to weak, at least 5 characters  required.", errorCode: 1001}
+        const err = {success: false, error: "Password to weak, at least 5 characters  required.", errorCode: 1025}
         return res.json(err)
     }
 
     if (!validator.isEmail(req.body.email)) {
-        const err = {success: false, error: "Email address not valid.", errorCode: 1001}
+        const err = {success: false, error: "Email address not valid.", errorCode: 1026}
         return res.json(err)
     }
 
@@ -65,15 +65,15 @@ router.post("/register", async (req, res) => {
     } catch (error) {
         // Handle errors
         if (error.constraint === 'users_username_key') {
-            const err = { success: false, error: "Username already exists!", errorCode: 1004 };
+            const err = { success: false, error: "Username already exists!", errorCode: 1027 };
             console.log(err, error);
             res.json(err);
         } else if (error.constraint === 'users_email_key') {
-                const err = { success: false, error: "Email already exists!", errorCode: 1004 };
+                const err = { success: false, error: "Email already exists!", errorCode: 1028 };
                 console.log(err, error);
                 res.json(err);
         } else {
-            const err = { success: false, error: "An error occurred.", errorCode: 1003 };
+            const err = { success: false, error: "An error occurred.", errorCode: 1029 };
             console.log(err, error);
             res.json(err);
         }
@@ -106,7 +106,7 @@ router.delete("/", verify, async (req, res) => {
         res.json({ success: true, result: "Succesful deleted your Account" });
 
     } catch (error) {
-        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1012 };
+        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1030 };
         console.log(err, error);
         res.json(err);
     }
@@ -124,7 +124,7 @@ router.patch("/change-password", verify, async (req, res) => {
         const password = req.body.password
 
         if (req.body.password.length < 5) {
-            const err = {success: false, error: "Password to weak, at least 5 characters  required.", errorCode: 1001}
+            const err = {success: false, error: "Password to weak, at least 5 characters  required.", errorCode: 1031}
             return res.json(err)
         }
 
@@ -135,7 +135,7 @@ router.patch("/change-password", verify, async (req, res) => {
         res.json({ success: true, result: "Succesful updated your Password. You have to login again." });
 
     } catch (error) {
-        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1012 };
+        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1032 };
         console.log(err, error);
         res.json(err);
     }
@@ -160,11 +160,11 @@ router.patch("/change-username", verify, async (req, res) => {
     } catch (error) {
         // Handle errors
         if (error.constraint === 'users_username_key') {
-            const err = { success: false, error: "Username already exists!", errorCode: 1004 };
+            const err = { success: false, error: "Username already exists!", errorCode: 1033 };
             console.log(err, error);
             res.json(err);
         } else {
-            const err = { success: false, error: "An error occurred.", errorCode: 1003 };
+            const err = { success: false, error: "An error occurred.", errorCode: 1034 };
             console.log(err, error);
             res.json(err);
         }

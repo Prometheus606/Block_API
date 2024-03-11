@@ -13,7 +13,7 @@ router.get("/all", verify, async (req, res) => {
         SELECT posts.*, users.username as author
         FROM posts 
         LEFT JOIN users ON posts.user_id = users.id
-        WHERE posts.id = $1`, [user.id]);
+        WHERE posts.user_id = $1`, [user.id]);
 
         const posts = result.rows;
         console.log(posts);
@@ -21,7 +21,7 @@ router.get("/all", verify, async (req, res) => {
         res.json({ success: true, result: posts });
 
     } catch (error) {
-        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1012 };
+        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1050 };
         console.log(err, error);
         res.json(err);
     }
@@ -48,7 +48,7 @@ router.get("/:id", verify, async (req, res) => {
     `, [id]);
     
     if (result.rows.length < 1) {
-        const err = { success: false, error: "Post not found", errorCode: 1020 };
+        const err = { success: false, error: "Post not found", errorCode: 1051 };
         return res.json(err);
     }
     
@@ -62,12 +62,17 @@ router.get("/:id", verify, async (req, res) => {
     };
     
     // Extract comments from the result and format them
-    const comments = result.rows.map(row => ({
+    let comments = result.rows.map(row => ({
         id: row.comment_id,
         content: row.comment_content,
         date: row.comment_date,
         username: row.comment_user_username
     }));
+    console.log(comments[0].id);
+
+    if (comments[0].id === null) {
+        comments = []
+    }
     
     // Format the response JSON
     const responseData = {
@@ -82,7 +87,7 @@ router.get("/:id", verify, async (req, res) => {
     
 
     } catch (error) {
-        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1012 };
+        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1052 };
         console.log(err, error);
         res.json(err);
     }
@@ -102,7 +107,7 @@ router.post("/", verify, async (req, res) => {
         res.json({ success: true, result: post });
 
     } catch (error) {
-        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1012 };
+        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1053 };
         console.log(err, error);
         res.json(err);
     }
@@ -128,7 +133,7 @@ router.put("/:id", verify, async (req, res) => {
         res.json({ success: true, result: post });
 
     } catch (error) {
-        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1012 };
+        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1054 };
         console.log(err, error);
         res.json(err);
     }
@@ -146,7 +151,7 @@ router.delete("/:id", verify, async (req, res) => {
         let result = await db.query("SELECT * FROM posts WHERE id=$1 AND user_id = $2", [id, user.id]);
 
         if (result.rows.length < 1) {
-            const err = { success: false, error: "Post not found", errorCode: 1020 };
+            const err = { success: false, error: "Post not found", errorCode: 1055 };
             return res.json(err);
         }
 
@@ -156,7 +161,7 @@ router.delete("/:id", verify, async (req, res) => {
         res.json({ success: true, message: "Successful deleted your Post." });
 
     } catch (error) {
-        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1012 };
+        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1056 };
         console.log(err, error);
         res.json(err);
     }

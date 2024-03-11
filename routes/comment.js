@@ -16,7 +16,7 @@ router.get("/all", verify, async (req, res) => {
         res.json({ success: true, result: posts });
 
     } catch (error) {
-        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1012 };
+        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1100 };
         console.log(err, error);
         res.json(err);
     }
@@ -34,7 +34,7 @@ router.get("/:id", verify, async (req, res) => {
         const result = await db.query("SELECT * FROM comments WHERE id = $1 AND user_id = $2", [id, user.id]);
 
         if (result.rows.length < 1) {
-            const err = { success: false, error: "Comment not found", errorCode: 1020 };
+            const err = { success: false, error: "Comment not found", errorCode: 1101 };
             return res.json(err);
         }
         const post = result.rows[0];
@@ -42,7 +42,7 @@ router.get("/:id", verify, async (req, res) => {
         res.json({ success: true, result: post });
 
     } catch (error) {
-        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1012 };
+        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1102 };
         console.log(err, error);
         res.json(err);
     }
@@ -62,7 +62,7 @@ router.post("/", verify, async (req, res) => {
         res.json({ success: true, result: post });
 
     } catch (error) {
-        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1012 };
+        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1103 };
         console.log(err, error);
         res.json(err);
     }
@@ -80,7 +80,7 @@ router.put("/:id", verify, async (req, res) => {
         result = await db.query("UPDATE comments SET content= $2 WHERE id=$1 AND user_id = $3 RETURNING *", [id, req.body.content, user.id]);
 
         if (result.rows.length < 1) {
-            const err = { success: false, error: "Comment not found", errorCode: 1020 };
+            const err = { success: false, error: "Comment not found", errorCode: 1104 };
             return res.json(err);
         }
 
@@ -89,7 +89,7 @@ router.put("/:id", verify, async (req, res) => {
         res.json({ success: true, result: post });
 
     } catch (error) {
-        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1012 };
+        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1105 };
         console.log(err, error);
         res.json(err);
     }
@@ -104,17 +104,19 @@ router.delete("/:id", verify, async (req, res) => {
     try {
         const user = req.user;
 
-        const result = await db.query("DELETE FROM comments WHERE id=$1 AND user_id = $2", [id, user.id]);
+        let result = await db.query("SELECT * FROM comments WHERE id=$1 AND user_id = $2", [id, user.id]);
 
         if (result.rows.length < 1) {
-            const err = { success: false, error: "Comment not found", errorCode: 1020 };
+            const err = { success: false, error: "Comment not found", errorCode: 1106 };
             return res.json(err);
         }
+
+        await db.query("DELETE FROM comments WHERE id=$1 AND user_id = $2", [id, user.id]);
 
         res.json({ success: true, message: "Successful deleted your Comment." });
 
     } catch (error) {
-        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1012 };
+        const err = { success: false, error: "An error occurred. You are not logged in or not provide all parameters. Read the documentation.", errorCode: 1107 };
         console.log(err, error);
         res.json(err);
     }

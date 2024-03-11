@@ -1,6 +1,8 @@
 // import requirements
 const express = require("express")
 const cookieParser = require('cookie-parser')
+const morgan = require('morgan');
+const helmet = require("helmet")
 
 // get environment variables
 require("dotenv").config()
@@ -12,6 +14,11 @@ app.use(express.urlencoded({extended: false}))
 app.use(express.json())
 app.use(express.static("public"))
 app.use(cookieParser())
+app.use(helmet())
+
+// use ether a IP limter (in Production), or use morgan logging
+if (process.env.NODE_ENV === 'production') app.use(require("./middleware/limiter"));
+  else app.use(morgan('dev'))
 
 //database
 const { connectDB, disconnectDB } = require('./middleware/db');
