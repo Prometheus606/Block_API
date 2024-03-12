@@ -10,10 +10,10 @@ router.get("/all", verify, async (req, res) => {
         const user = req.user;
 
         const result = await db.query(`        
-        SELECT posts.*, users.username as author
-        FROM posts 
-        LEFT JOIN users ON posts.user_id = users.id
-        WHERE posts.user_id = $1`, [user.id]);
+        SELECT blog_api_posts.*, blog_api_users.username as author
+        FROM blog_api_posts 
+        LEFT JOIN blog_api_users ON blog_api_posts.user_id = blog_api_users.id
+        WHERE blog_api_posts.user_id = $1`, [user.id]);
 
         const posts = result.rows;
         console.log(posts);
@@ -37,14 +37,14 @@ router.get("/:id", verify, async (req, res) => {
         const user = req.user;
 
         const result = await db.query(`
-        SELECT posts.*, users.username as author,
-        comments.id as comment_id, comments.content as comment_content, comments.date as comment_date, 
+        SELECT blog_api_posts.*, blog_api_users.username as author,
+        blog_api_comments.id as comment_id, blog_api_comments.content as comment_content, blog_api_comments.date as comment_date, 
         comment_users.username as comment_user_username
-        FROM posts 
-        LEFT JOIN comments ON posts.id = comments.post_id
-        LEFT JOIN users as comment_users ON comments.user_id = comment_users.id
-        LEFT JOIN users ON posts.user_id = users.id
-        WHERE posts.id = $1
+        FROM blog_api_posts 
+        LEFT JOIN blog_api_comments ON blog_api_posts.id = blog_api_comments.post_id
+        LEFT JOIN blog_api_users as comment_users ON blog_api_comments.user_id = comment_users.id
+        LEFT JOIN blog_api_users ON blog_api_posts.user_id = blog_api_users.id
+        WHERE blog_api_posts.id = $1
     `, [id]);
     
     if (result.rows.length < 1) {
@@ -101,7 +101,7 @@ router.post("/", verify, async (req, res) => {
     try {
         const user = req.user;
 
-        const result = await db.query("INSERT INTO posts (user_id, title, content) VALUES ($1, $2, $3) RETURNING *", [user.id, req.body.title, req.body.content]);
+        const result = await db.query("INSERT INTO blog_api_posts (user_id, title, content) VALUES ($1, $2, $3) RETURNING *", [user.id, req.body.title, req.body.content]);
         const post = result.rows[0];
 
         res.json({ success: true, result: post });
@@ -122,7 +122,7 @@ router.put("/:id", verify, async (req, res) => {
     try {
         const user = req.user;
 
-        const result = await db.query("UPDATE posts SET title= $2, content= $3 WHERE id=$1 AND user_id = $4 RETURNING *", [id, req.body.title, req.body.content, user.id]);
+        const result = await db.query("UPDATE blog_api_posts SET title= $2, content= $3 WHERE id=$1 AND user_id = $4 RETURNING *", [id, req.body.title, req.body.content, user.id]);
         const post = result.rows[0];
 
         if (result.rows.length < 1) {
@@ -148,15 +148,15 @@ router.delete("/:id", verify, async (req, res) => {
     try {
         const user = req.user;
 
-        let result = await db.query("SELECT * FROM posts WHERE id=$1 AND user_id = $2", [id, user.id]);
+        let result = await db.query("SELECT * FROM blog_api_posts WHERE id=$1 AND user_id = $2", [id, user.id]);
 
         if (result.rows.length < 1) {
             const err = { success: false, error: "Post not found", errorCode: 1055 };
             return res.json(err);
         }
 
-        await db.query("DELETE FROM comments WHERE post_id = $1", [id]);
-        result = await db.query("DELETE FROM posts WHERE id=$1 AND user_id = $2", [id, user.id]);
+        await db.query("DELETE FROM blog_api_comments WHERE post_id = $1", [id]);
+        result = await db.query("DELETE FROM blog_api_posts WHERE id=$1 AND user_id = $2", [id, user.id]);
 
         res.json({ success: true, message: "Successful deleted your Post." });
 

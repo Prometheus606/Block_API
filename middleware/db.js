@@ -3,17 +3,27 @@ const connectDB = async (req, res, next) => {
     try {
         const pg = require("pg")
 
-        const db = new pg.Client({
-            user: process.env.PG_USER,
-            password: process.env.PG_PW,
-            port: process.env.PG_PORT,
-            database: process.env.PG_DB,
-            host: process.env.PG_HOST
-        })
+        let db;
+
+        if (process.env.PG_URL) {
+            db = new pg.Client({
+                connectionString: process.env.PG_URL,
+                ssl: true
+            })
+        } else {
+            db = new pg.Client({
+                user: process.env.PG_USER,
+                password: process.env.PG_PW,
+                port: process.env.PG_PORT,
+                database: process.env.PG_DB,
+                host: process.env.PG_HOST
+            })
+        }
+
         db.connect()
     
         await db.query(`
-            CREATE TABLE IF NOT EXISTS users (
+            CREATE TABLE IF NOT EXISTS blog_api_users (
                 id SERIAL PRIMARY KEY, 
                 email TEXT NOT NULL UNIQUE,
                 username TEXT NOT NULL UNIQUE, 
@@ -21,19 +31,19 @@ const connectDB = async (req, res, next) => {
             )
         `)
         await db.query(`
-            CREATE TABLE IF NOT EXISTS posts (
+            CREATE TABLE IF NOT EXISTS blog_api_posts (
                 id SERIAL PRIMARY KEY, 
-                user_id INT REFERENCES users(id),
+                user_id INT REFERENCES blog_api_users(id),
                 title TEXT NOT NULL, 
                 content TEXT NOT NULL, 
                 date DATE NOT NULL DEFAULT CURRENT_DATE
             )
         `);
         await db.query(`
-            CREATE TABLE IF NOT EXISTS comments (
+            CREATE TABLE IF NOT EXISTS blog_api_comments (
                 id SERIAL PRIMARY KEY, 
-                user_id INT REFERENCES users(id),
-                post_id INT REFERENCES posts(id),
+                user_id INT REFERENCES blog_api_users(id),
+                post_id INT REFERENCES blog_api_posts(id),
                 content TEXT NOT NULL, 
                 date DATE NOT NULL DEFAULT CURRENT_DATE
             )

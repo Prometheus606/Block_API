@@ -11,10 +11,10 @@ router.get("/", verify, async (req, res) => {
     try {
 
         let sqlQuery = `
-            SELECT posts.id, posts.title, posts.content, users.username 
-            FROM posts 
-            INNER JOIN users ON posts.user_id = users.id
-            WHERE 1=1`; // Basisabfrage mit der Tabelle users joinen
+            SELECT blog_api_posts.id, blog_api_posts.title AS title, blog_api_posts.content AS content, blog_api_users.username 
+            FROM blog_api_posts 
+            INNER JOIN blog_api_users ON blog_api_posts.user_id = blog_api_users.id
+            WHERE 1=1`;
 
         if (req.query.author) {
             sqlQuery += ` AND LOWER(username) = LOWER($1)`;

@@ -17,7 +17,7 @@ router.post("/login", async (req, res) => {
 
     const { username, password } = req.body
 
-    const result = await db.query("SELECT * FROM users WHERE username=$1", [username])
+    const result = await db.query("SELECT * FROM blog_api_users WHERE username=$1", [username])
 
     if (result.rows.length !== 1) {
         const err = {success: false, error: "User not found.", errorCode: 1021}
@@ -60,7 +60,7 @@ router.post("/register", async (req, res) => {
 
     try {
         const passwordHash = await pw.hash(password)
-        await db.query("INSERT INTO users (username, password, email) VALUES ($1, $2, $3)", [username, passwordHash, email])
+        await db.query("INSERT INTO blog_api_users (username, password, email) VALUES ($1, $2, $3)", [username, passwordHash, email])
         res.json({success: true, message: "Registration Successful."})
     } catch (error) {
         // Handle errors
@@ -99,9 +99,9 @@ router.delete("/", verify, async (req, res) => {
     try {
         const user = req.user;
 
-        await db.query("DELETE FROM comments WHERE user_id = $1", [user.id]);
-        await db.query("DELETE FROM posts WHERE user_id = $1", [user.id]);
-        await db.query("DELETE FROM users WHERE id = $1", [user.id]);
+        await db.query("DELETE FROM blog_api_comments WHERE user_id = $1", [user.id]);
+        await db.query("DELETE FROM blog_api_posts WHERE user_id = $1", [user.id]);
+        await db.query("DELETE FROM blog_api_users WHERE id = $1", [user.id]);
 
         res.json({ success: true, result: "Succesful deleted your Account" });
 
@@ -129,7 +129,7 @@ router.patch("/change-password", verify, async (req, res) => {
         }
 
         const passwordHash = await pw.hash(password)
-        await db.query("UPDATE users SET password = $2 WHERE id = $1", [user.id, passwordHash]);
+        await db.query("UPDATE blog_api_users SET password = $2 WHERE id = $1", [user.id, passwordHash]);
         res.clearCookie("token")
 
         res.json({ success: true, result: "Succesful updated your Password. You have to login again." });
@@ -152,14 +152,14 @@ router.patch("/change-username", verify, async (req, res) => {
         const user = req.user;
         const username = req.body.username
 
-        await db.query("UPDATE users SET username = $2 WHERE id = $1", [user.id, username]);
+        await db.query("UPDATE blog_api_users SET username = $2 WHERE id = $1", [user.id, username]);
         res.clearCookie("token")
 
         res.json({ success: true, result: "Succesful updated your Username. You have to login again." });
 
     } catch (error) {
         // Handle errors
-        if (error.constraint === 'users_username_key') {
+        if (error.constraint === 'blog_api_users_username_key') {
             const err = { success: false, error: "Username already exists!", errorCode: 1033 };
             console.log(err, error);
             res.json(err);
@@ -187,14 +187,14 @@ router.patch("/change-email", verify, async (req, res) => {
             return res.json(err)
         }
 
-        await db.query("UPDATE users SET email = $2 WHERE id = $1", [user.id, email]);
+        await db.query("UPDATE blog_api_users SET email = $2 WHERE id = $1", [user.id, email]);
         res.clearCookie("token")
 
         res.json({ success: true, result: "Succesful updated your Email address. You have to login again." });
 
     } catch (error) {
         // Handle errors
-        if (error.constraint === 'users_email_key') {
+        if (error.constraint === 'blog_api_users_email_key') {
                 const err = { success: false, error: "Email already exists!", errorCode: 1004 };
                 console.log(err, error);
                 res.json(err);
